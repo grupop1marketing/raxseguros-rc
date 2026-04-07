@@ -1398,7 +1398,15 @@
         v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
         this.value = v;
       });
- 
+
+      // Máscara Faturamento: R$ 0.000.000
+      document.querySelector('[name="faturamento"]').addEventListener('input', function() {
+        let v = this.value.replace(/\D/g, ''); // remove tudo que não for número
+        if (!v) { this.value = ''; return; }
+        v = (parseInt(v, 10)).toLocaleString('pt-BR'); // formata com pontos
+        this.value = 'R$ ' + v;
+      });
+        
       // Máscara WhatsApp: (00) 00000-0000
       document.querySelector('[name="whatsapp"]').addEventListener('input', function() {
         let v = this.value.replace(/\D/g, '').slice(0, 11);
