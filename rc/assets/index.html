@@ -1021,57 +1021,57 @@
                     <h3>Cotação Gratuita</h3>
                     <p>Preencha e receba sua cotação personalizada.</p>
                 </div>
-                <form action="#" method="POST" style="display: flex; flex-direction: column; gap: 1rem;">
+                <form id="rax-form-rc" style="display: flex; flex-direction: column; gap: 1rem;">
                     
                     <div class="ds-input-group">
                         <label class="ds-label">Nome Completo</label>
-                        <input type="text" class="ds-input" placeholder="Seu nome" required>
+                        <input type="text" name="nome" class="ds-input" placeholder="Seu nome" required>
                     </div>
-
+ 
                     <div class="ds-input-group">
                         <label class="ds-label">CPF</label>
-                        <input type="text" class="ds-input" placeholder="000.000.000-00" maxlength="14" oninput="..." required>
+                        <input type="text" name="cpf" class="ds-input" placeholder="000.000.000-00" maxlength="14" required>
                     </div>
-
+ 
                     <div class="ds-input-group">
                         <label class="ds-label">Especialidade</label>
-                        <input type="text" class="ds-input" required>
+                        <input type="text" name="especialidade" class="ds-input" placeholder="Ex: Cardiologia" required>
                     </div>
                     
                     <div class="ds-input-group grid-2">
                         <div>
                             <label class="ds-label">WhatsApp</label>
-                            <input type="tel" class="ds-input" placeholder="(00) 00000-0000" required>
+                            <input type="tel" name="whatsapp" class="ds-input" placeholder="(00) 00000-0000" maxlength="15" required>
                         </div>
                         <div>
                             <label class="ds-label">CRM</label>
-                            <input type="text" class="ds-input">
+                            <input type="text" name="crm" class="ds-input" placeholder="Ex: 123456/MG">
                         </div>
                     </div>
                     
                     <div class="ds-input-group grid-2">
                         <div>
                             <label class="ds-label">Faturamento Anual</label>
-                            <input type="text" class="ds-input">
+                            <input type="text" name="faturamento" class="ds-input" placeholder="Ex: R$ 200.000">
                         </div>
                         <div>
                             <label class="ds-label">Tempo de Atuação</label>
-                            <select class="ds-select">
+                            <select name="tempo_atuacao" class="ds-select">
                                 <option>0 a 2 anos</option>
                                 <option>3 a 7 anos</option>
                                 <option>7 anos +</option>
                             </select>
                         </div>
                     </div>
-
+ 
                     <div class="ds-input-group" style="margin-top: 0.5rem;">
                         <label class="ds-label">Realiza Cirurgias ou Procedimentos Invasivos</label>
                         <div class="ds-radio-group">
                             <label class="ds-radio-label">
-                                <input type="radio" name="ja_possui" value="sim"> Sim
+                                <input type="radio" name="faz_cirurgias" value="sim"> Sim
                             </label>
                             <label class="ds-radio-label">
-                                <input type="radio" name="ja_possui" value="nao" checked> Não
+                                <input type="radio" name="faz_cirurgias" value="nao" checked> Não
                             </label>
                         </div>
                     </div>
@@ -1385,6 +1385,68 @@
             <p>&copy; 2026 RAX Seguros. Todos os direitos reservados. <br> Desenvolvido por <a href="https://grupop1.com.br" target="_blank" style="color: var(--rx-primary); text-decoration: none;">P1 Marketing</a></p>
         </div>
     </footer>
+
+    <!-- Script do formulário RC -->
+    <script>
+      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoTIjyccgmWsVmktVtY-mM39HhzOx7b69usT507X4AVTvMQkOyDuNKnx-msBzVOXMpow/exec";
+ 
+      // Máscara CPF: 000.000.000-00
+      document.querySelector('[name="cpf"]').addEventListener('input', function() {
+        let v = this.value.replace(/\D/g, '').slice(0, 11);
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        this.value = v;
+      });
+ 
+      // Máscara WhatsApp: (00) 00000-0000
+      document.querySelector('[name="whatsapp"]').addEventListener('input', function() {
+        let v = this.value.replace(/\D/g, '').slice(0, 11);
+        v = v.replace(/^(\d{2})(\d)/, '($1) $2');
+        v = v.replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+        this.value = v;
+      });
+ 
+      // Envio do formulário
+      document.getElementById('rax-form-rc').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+ 
+        const btn = this.querySelector('button[type=submit]');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+ 
+        const dados = {
+          tipo:          'rc',
+          nome:          this.querySelector('[name="nome"]').value,
+          cpf:           this.querySelector('[name="cpf"]').value,
+          especialidade: this.querySelector('[name="especialidade"]').value,
+          whatsapp:      this.querySelector('[name="whatsapp"]').value,
+          crm:           this.querySelector('[name="crm"]').value,
+          faturamento:   this.querySelector('[name="faturamento"]').value,
+          tempo_atuacao: this.querySelector('[name="tempo_atuacao"]').value,
+          faz_cirurgias: this.querySelector('[name="faz_cirurgias"]:checked').value,
+        };
+ 
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+          });
+ 
+          btn.textContent = 'Enviado com sucesso! ✓';
+          btn.style.background = '#22c55e';
+          this.reset();
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'SOLICITAR COTAÇÃO GRATUITA';
+          alert('Erro ao enviar. Tente novamente.');
+        }
+      });
+    </script>
+    
 
     <!-- Script to trigger entrance animations on scroll -->
     <script>
